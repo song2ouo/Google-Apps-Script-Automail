@@ -1,0 +1,60 @@
+function sendEmail() {
+
+  SpreadsheetApp.getActiveSpreadsheet().getSheetByName("Health").activate();
+
+  var ss = SpreadsheetApp.getActiveSpreadsheet().getActiveSheet();
+  var lr = ss.getLastRow();
+  // Logger.log("ss:" + ss.getRange(2, 1).getValue());
+
+  // email template text
+  var templateText = ss.getRange(2, 5).getValue();
+  // Logger.log("template text:" + templateText);
+
+  // 하루에 보낼 수 있는 mail의 수
+  var quotaLeft = MailApp.getRemainingDailyQuota();
+  // Logger.log(quotaLeft);
+
+  // java script는 변수의 타입이 number인지 string인지 모르므로 테스트를 할 것
+  // Logger.log("lr -1 :" +(lr -1));
+
+  Logger.log("+ the last low :" + lr);
+  // Logger.log(" test : " + Math.min(100, lr));
+
+  // var Reply_To = "chlthddl26@naver.com";
+  var subject = '[경영본부] 건강검진 안내';
+
+  for (var i=2;i<=Math.min(quotaLeft, lr);i++) {
+
+    var currentEmail = ss.getRange(i,1).getValue();
+    var currentName = ss.getRange(i,2).getValue();
+    var currentRank = ss.getRange(i,3).getValue();
+    var currentList = ss.getRange(i,4).getValue();
+
+    // todo: 공백이 있는 line은 스킵
+
+    // Logger.log(" [" + i + "] th");
+    // Logger.log("- email : " + currentEmail);
+    // Logger.log("- name  : " + currentName);
+    // Logger.log("- rank  : " + currentRank);
+    // Logger.log("- list  : " + currentList);
+
+    var cloneTemplate = templateText; 
+    // Logger.log("body : " + cloneTemplate.replace("{name}",currentName).replace("{rank}",currentRank).replace("{list}",currentList));
+    // Logger.log("template : " + templateText);
+
+    var messageBody = templateText.replaceAll("{name}",currentName).replaceAll("{rank}",currentRank).replaceAll("{list}",currentList);
+    // Logger.log("- body : " + messageBody);
+
+    try {
+      // Logger.log("emailaddr: " + emailAdress + ",sub:" + subject);
+      // MailApp.sendEmail(currentEmail, subject, messageBody);
+      // 위에는 내 G메일로 메일을 보낼 때, 아래는 G메일과 연결된 다른 메일로 보낼 때 설정
+      GmailApp.sendEmail(currentEmail, subject, messageBody, {
+    from: "chlthddl26@naver.com",
+    name: "최송이"});
+      Logger.log("[" + i + "]th success");
+    } catch(e) {
+      Logger.log("failed : " + e);
+    }
+  }
+} // sendMail
